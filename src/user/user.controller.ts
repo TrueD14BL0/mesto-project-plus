@@ -1,28 +1,47 @@
 import { NextFunction, Request, Response } from "express";
 import userModel from "./user.model";
-import NotFoundError from "../Errors/MyError";
+import MyError from "../Errors/MyError";
+import bcrypt from 'bcryptjs';
+import { USER_NOT_FOUND } from "../utils/error-constants";
 
 export const createUser = (req: Request, res: Response, next: NextFunction) => {
-  const {name, about, avatar} = req.body;
-  userModel.create({
-    name: name,
-    about: about,
-    avatar: avatar,
-  })
+  const {name, about, avatar, email, password} = req.body;
+  bcrypt.hash(password,10)
+    .then(hash =>
+      userModel.create({
+      name: name,
+      about: about,
+      avatar: avatar,
+      email: email,
+      password: hash,
+    }))
     .then((user) => {
       if(!user){
-        throw new NotFoundError('Запрашиваемый пользователь не найден');
+        throw MyError.NotFoundError(USER_NOT_FOUND);
       }
       res.send(user);
     })
     .catch(next);
 };
 
+
+
+export const getUserInfo = (req: Request, res: Response, next: NextFunction) => {
+  userModel.findById(req.user._id)
+    .then(user => {
+      if(!user){
+        throw MyError.NotFoundError(USER_NOT_FOUND);
+      }
+      res.send(user);
+    })
+    .catch(next);
+}
+
 export const getUserById = (req: Request, res: Response, next: NextFunction) => {
   userModel.findById(req.params.userId)
     .then(user => {
       if(!user){
-        throw new NotFoundError('Запрашиваемый пользователь не найден');
+        throw MyError.NotFoundError(USER_NOT_FOUND);
       }
       res.send(user);
     })
@@ -47,7 +66,7 @@ export const patchUserInfo = (req: Request, res: Response, next: NextFunction) =
   )
     .then(user => {
       if(!user){
-        throw new NotFoundError('Запрашиваемый пользователь не найден');
+        throw MyError.NotFoundError(USER_NOT_FOUND);
       }
       res.send(user);
     })
@@ -65,7 +84,7 @@ export const patchAvatarInfo = (req: Request, res: Response, next: NextFunction)
   )
     .then(user => {
       if(!user){
-        throw new NotFoundError('Запрашиваемый пользователь не найден');
+        throw MyError.NotFoundError(USER_NOT_FOUND);
       }
       res.send(user);
     })

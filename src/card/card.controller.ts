@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import cardModel from "./card.model";
-import NotFoundError from "../Errors/MyError";
+import MyError from "../Errors/MyError";
 
 export const createCard = (req: Request, res: Response, next: NextFunction) => {
   const {name, link} = req.body;
@@ -26,10 +26,10 @@ export const getAllCards = (req: Request, res: Response, next: NextFunction) => 
 }
 
 export const delCardById = (req: Request, res: Response, next: NextFunction) => {
-  cardModel.findByIdAndRemove(req.params.cardId)
+  cardModel.findOneAndDelete({ _id: req.params.cardId, owner: { _id: req.user._id} })
     .then(card => {
       if(!card){
-        throw new NotFoundError('Карточка не найдена');
+        throw MyError.NotFoundError('Карточка не найдена');
       }
       res.send(card);
     })
@@ -46,7 +46,7 @@ export const likeCard = (req: Request, res: Response, next: NextFunction) => {
   )
     .then(card => {
       if(!card){
-        throw new NotFoundError('Карточка не найдена');
+        throw MyError.NotFoundError('Карточка не найдена');
       }
       res.send(card);
     })
@@ -63,7 +63,7 @@ export const dislikeCard = (req: Request, res: Response, next: NextFunction) => 
   )
     .then(card => {
       if(!card){
-        throw new NotFoundError('Карточка не найдена');
+        throw MyError.NotFoundError('Карточка не найдена');
       }
       res.send(card);
     })
