@@ -2,30 +2,49 @@ import express from 'express';
 import mongoose from 'mongoose';
 import userRouter from './user/user.router';
 import cardRouter from './card/card.router';
-//import NotFoundError from './Errors/NotFoundError';
-//import { RESOURSE_NOT_FOUND } from './utils/errorConstants';
-import { errorCheck } from './utils/errorCheck';
+import { errorCheck } from './utils/error-check';
+import { createUser } from './user/user.controller';
+import { login } from './login/login.controller';
+import { auth } from './auth/auth';
+import { requestLogger, errorLogger } from './logger/logger';
+import { celebrate, Joi, errors } from "celebrate";
 
 const { PORT = 3000 } = process.env;
 const app = express();
 
-// подключаемся к серверу MongoiDB
 mongoose.connect('mongodb://127.0.0.1:27017/mestodb');
 
-// подключаем мидлвары, роуты и всё остальное...
 app.use(express.json());
+app.use(requestLogger);
 
-app.use((req:express.Request, res: express.Response, next) => {
-  req.user = {
-    _id: '64bec5c3cf008c44a7bc1c52'
-  };
-  next();
-});
+app.post('/signin',
+  celebrate({
+    body: Joi.object().keys({
+      email: Joi.string().email().required(),
+      password: Joi.string().required(),
+    }),
+  }),
+  login
+);
+app.post('/signup',
+  celebrate({
+    body: Joi.object().keys({
+      email: Joi.string().email().required(),
+      password: Joi.string().required(),
+      name: Joi.string().min(2).max(30),
+      about: Joi.string().min(2).max(200),
+      avatar: Joi.string().uri(),
+    }),
+  }),
+  createUser
+);
 
+app.use(auth);
 app.use('/users', userRouter);
 app.use('/cards', cardRouter);
-//app.use('/', () =>{throw new NotFoundError(RESOURSE_NOT_FOUND);} );
 
+app.use(errors());
+app.use(errorLogger);
 app.use(errorCheck);
 
 app.listen(PORT, () => {

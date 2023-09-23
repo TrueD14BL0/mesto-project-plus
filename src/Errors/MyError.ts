@@ -1,4 +1,4 @@
-import { NOT_FOUND, SERVER_ERROR } from "../utils/errorConstants";
+import { INCORRECT_LOGIN, INCORRECT_LOGIN_MESSAGE, NOT_FOUND, SERVER_ERROR } from "../utils/error-constants";
 
 export default class MyError extends Error {
   statusCode:number = 0;
@@ -9,6 +9,10 @@ export default class MyError extends Error {
 
   static NotFoundError(message: string){
     return new MyError(message, NOT_FOUND);
+  }
+
+  static IncorrectLoginError(){
+    return new MyError(INCORRECT_LOGIN_MESSAGE, INCORRECT_LOGIN);
   }
 
 }

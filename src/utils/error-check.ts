@@ -1,5 +1,5 @@
 import express from "express";
-import { INCORRECT_DATA, INCORRECT_DATA_MESSAGE, SERVER_ERROR } from "./errorConstants";
+import { INCORRECT_DATA, INCORRECT_DATA_MESSAGE, SERVER_ERROR } from "./error-constants";
 
 export const errorCheck = (err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
   let { message } = err;
